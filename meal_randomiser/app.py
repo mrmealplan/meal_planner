@@ -5,14 +5,19 @@ st.write("DEBUG VERSION: v7")
 
 def get_connection():
     db = st.secrets["database"]
-    return psycopg2.connect(
-        host=db["host"], 
-        port=db["port"], 
-        dbname=db["dbname"], 
-        ser=db["user"], 
-        password=db["password"], 
-        sslmode="require"
-     )
+    try:
+        return psycopg2.connect(
+            host=db["host"],
+            port=db["port"],
+            dbname=db["dbname"],
+            user=db["user"],
+            password=db["password"],
+            sslmode="require"
+        )
+    except Exception as e:
+        st.error(f"RAW CONNECTION ERROR: {e}")
+        raise
+
 
 def get_all_meals():
     conn = get_connection()
