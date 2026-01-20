@@ -93,7 +93,15 @@ def get_random_meal(filters):
 
 #GENERATE WEEK
 def generate_week():
-    ordered_days=sorted(
+   
+   #TEMP DEBUG LINES
+   conn = get_connection()
+   cur = conn.cursor()
+   cur.execute("SELECT COUNT(*) FROM meals")
+   st.write("MEAL COUNT:", cur.fetchone())
+   conn.close() 
+   
+   ordered_days=sorted(
         DAYS,
         key=lambda d: filter_priority(st.session_state["filters"][d])
     )
