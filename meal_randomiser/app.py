@@ -96,6 +96,11 @@ def generate_week():
 
     for day in ordered_days:
         filters = st.session_state["filters"][day]
+
+        if "Skip" in filters:
+            st.session_state["week_plan"][day] = None
+            continue
+
         meal = get_random_meal(filters)
 
         if meal is None:
@@ -140,20 +145,14 @@ for day in DAYS:
 
     st.session_state["filters"][day] = st.multiselect(
         "Filters",
-        ["Veggie", "Vegan", "Quick"],
+        ["Veggie", "Vegan", "Quick", "Skip"],
         default  = st.session_state["filters"][day],
         key=f"{day}_filters"
     )
 
-    col1, col2 = st.columns(2)
 
-    with col1:
-        if st.button("Suggest", key=f"{day}_suggest"):
-            reroll_day(day)
-
-    with col2:
-        if st.button("Re-roll", key=f"{day}_reroll"):
-            reroll_day(day)
+    if st.button("Re-roll", key=f"{day}_reroll"):
+        reroll_day(day)
 
     
 
