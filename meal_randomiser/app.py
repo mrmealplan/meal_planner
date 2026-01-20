@@ -80,10 +80,6 @@ def get_random_meal(filters):
 
     query += " ORDER BY RANDOM() LIMIT 1"
 
-    st.write("QUERY:", query)
-    st.write("PARAMS:", params)
-
-
     cur.execute(query, params)
     meal = cur.fetchone()
     conn.close()
@@ -92,19 +88,7 @@ def get_random_meal(filters):
 
 #GENERATE WEEK
 def generate_week():
-    
-    #TEMP DEBUG LINES
-    conn = get_connection()
-    cur = conn.cursor()
-    cur.execute("SELECT COUNT(*) FROM meals")
-    st.write("MEAL COUNT:", cur.fetchone())
-    conn.close()
-    
-    
-    
-    
-    
-    
+          
     ordered_days=sorted(
         DAYS,
         key=lambda d: filter_priority(st.session_state["filters"][d])
@@ -185,6 +169,6 @@ if st.button("Clear Week"):
 for day in DAYS:
     meal = st.session_state["week_plan"][day]
     if meal:
-        st.success(meal)
+        st.success(f"{day}: {meal}")
     else:
         st.info("No meal selected yet.")
