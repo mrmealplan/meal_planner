@@ -146,7 +146,8 @@ for day in DAYS:
     with col1:
         st.markdown(
             f"""
-            <div styles="display:flex; align-items:center; height:100%; font-weight:bold;">{day}
+            <div styles="display:flex; align-items:center; height:100%; font-weight:bold;">
+                {day}
             </div>
             """,
             unsafe_allow_html=True
