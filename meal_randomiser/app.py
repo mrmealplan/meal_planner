@@ -144,7 +144,6 @@ for day in DAYS:
     col1, col2, col3 = st.columns([1,3,1])
     
     with col1:
-        st.markdown(f"**{day}**")
         st.markdown(
             f"""
             <div styles="display:flex; align-items:center; height:100%; font-weight:bold;">{day}
