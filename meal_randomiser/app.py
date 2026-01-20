@@ -80,6 +80,9 @@ def get_random_meal(filters):
 
     query += " ORDER BY RANDOM () LIMIT 1"
 
+    st.write("QUERY": query)
+    st.write("PARAMS:", params)
+
     cur.execute(query, params)
     meal = cur.fetchone()
     conn.close()
