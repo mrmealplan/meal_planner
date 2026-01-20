@@ -78,7 +78,7 @@ def get_random_meal(filters):
     if conditions:
         query += " WHERE " + " AND ".join(conditions)
 
-    query += " ORDER BY RANDOM () LIMIT 1"
+    query += " ORDER BY RANDOM() LIMIT 1"
 
     st.write("QUERY:", query)
     st.write("PARAMS:", params)
