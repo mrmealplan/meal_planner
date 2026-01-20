@@ -171,11 +171,7 @@ for day in DAYS:
         if st.button("Re-roll", key=f"{day}_reroll"):
             reroll_day(day)
 
-    meal = st.session_state["week_plan"][day]
-    if meal:
-        st.success(meal)
-    else:
-        st.info("No meal selected yet.")
+    
 
 st.markdown("---")
 
@@ -185,3 +181,10 @@ if st.button("Generate full week"):
 
 if st.button("Clear Week"):
     clear_week()
+
+for day in DAYS:
+    meal = st.session_state["week_plan"][day]
+    if meal:
+        st.success(meal)
+    else:
+        st.info("No meal selected yet.")
