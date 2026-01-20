@@ -141,18 +141,22 @@ def clear_week():
 st.title("Weekly meal planner")
 
 for day in DAYS:
-    st.subheader(day)
+    col1, col2, col3 = st.columns([1,3,1])
+    
+    with col1:
+        st.subheader(day)
 
-    st.session_state["filters"][day] = st.multiselect(
-        "Filters",
-        ["Veggie", "Vegan", "Quick", "Skip"],
-        default  = st.session_state["filters"][day],
-        key=f"{day}_filters"
-    )
+    with col2:
+        st.session_state["filters"][day] = st.multiselect(
+            "Filters",
+            ["Veggie", "Vegan", "Quick", "Skip"],
+            default  = st.session_state["filters"][day],
+            key=f"{day}_filters"
+        )
 
-
-    if st.button("Re-roll", key=f"{day}_reroll"):
-        reroll_day(day)
+    with col3:
+        if st.button("Re-roll", key=f"{day}_reroll"):
+            reroll_day(day)
 
     
 
