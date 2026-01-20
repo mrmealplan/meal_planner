@@ -1,12 +1,6 @@
 import streamlit as st
 import psycopg2
 
-st.write("DEBUG SECRETS:", st.secrets)
-
-st.write("DEBUG HOST:", st.secrets["database"]["host"])
-st.write("DEBUG USER:", st.secrets["database"]["user"])
-st.write("DEBUG DB:", st.secrets["database"]["dbname"])
-
 def get_connection():
     db = st.secrets["database"]
     return psycopg2.connect(
