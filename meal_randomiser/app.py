@@ -1,7 +1,7 @@
 import streamlit as st
 import psycopg2
 
-st.write("DEBUG VERSION: v7")
+st.write("DEBUG VERSION: v8")
 
 def get_connection():
     db = st.secrets["database"]
