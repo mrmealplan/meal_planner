@@ -83,6 +83,8 @@ def get_random_meal(filters):
     st.write("QUERY:", query)
     st.write("PARAMS:", params)
 
+    st.write("Day:", day, "Filters:", filters)
+
     cur.execute(query, params)
     meal = cur.fetchone()
     conn.close()
