@@ -3,10 +3,10 @@ import psycopg2
 
 def get_connection():
     return psycopg2.connect(
-        dbname="meal_planner_poc",
+        dbname="postgres",
         user="postgres",
-        password="!Eiiey45Romty?",
-        host="localhost",
+        password="!?RomtyEiiey454!?",
+        host="db.chshyaiulzcyfdhpuqax.supabase.co",
         port=5432
     )
 
