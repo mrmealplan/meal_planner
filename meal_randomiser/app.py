@@ -135,7 +135,7 @@ def reroll_day(day):
         st.warning(f"No meals match the criteria for {day}.")
         return
     
-    meal_id, mea_name, category = meal
+    meal_id, meal_name, category = meal
     
     st.session_state["week_plan"][day] = meal_name
     st.session_state["used_meals"].add(meal_id)
