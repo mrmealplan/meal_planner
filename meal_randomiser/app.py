@@ -49,7 +49,7 @@ def filter_priority(filters):
 #GET RANDOM MEAL
 def get_random_meal(filters):
     conn = get_connection()
-    cur = conn.cursor
+    cur = conn.cursor()
 
     query = "SELECT id, name, category FROM meals"
     conditions = []
@@ -83,7 +83,6 @@ def get_random_meal(filters):
     st.write("QUERY:", query)
     st.write("PARAMS:", params)
 
-    st.write("Day:", day, "Filters:", filters)
 
     cur.execute(query, params)
     meal = cur.fetchone()
