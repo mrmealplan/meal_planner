@@ -1,8 +1,7 @@
 import streamlit as st
 import psycopg2
 
-st.write("DEBUG APP ID:", st.runtime.get_instance()._session_mgr._app_id)
-
+st.write("DEBUG VERSION: v7")
 
 def get_connection():
     db = st.secrets["database"]
