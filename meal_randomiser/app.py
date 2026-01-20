@@ -2,15 +2,15 @@ import streamlit as st
 import psycopg2
 
 def get_connection():
+    db = st.secrets["database"]
     return psycopg2.connect(
-        host="db.chshyaiulzcyfdhpuqax.supabase.co",
-        port=5432,
-        dbname="postgres",
-        user="postgres",
-        password="S7aamiDx8Wz5AjrD",
-        sslmode="require",
-        sslrootcert="/etc/ssl/certs/ca-certificate.crt"
-    )
+        host=db["host"], 
+        port=db["port"], 
+        dbname=db["dbname"], 
+        ser=db["user"], 
+        password=db["password"], 
+        sslmode="require"
+     )
 
 def get_all_meals():
     conn = get_connection()
