@@ -144,7 +144,7 @@ for day in DAYS:
     col1, col2, col3 = st.columns([1,3,1])
     
     with col1:
-        st.subheader(day)
+        st.markdown(f"**{day}**")
 
     with col2:
         st.session_state["filters"][day] = st.multiselect(
