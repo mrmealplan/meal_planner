@@ -1,6 +1,8 @@
 import streamlit as st
 import psycopg2
 
+st.write("DEBUG SECRETS:", st.secrets)
+
 def get_connection():
     db = st.secrets["database"]
     return psycopg2.connect(
@@ -29,4 +31,3 @@ meals = get_all_meals()
 for name, category in meals:
     st.write(f"- {name} ({category})")
 
-    
