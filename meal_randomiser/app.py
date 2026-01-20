@@ -151,7 +151,7 @@ for day in DAYS:
             "",
             ["Veggie", "Vegan", "Quick", "Skip"],
             default  = st.session_state["filters"][day],
-            key=f"{day}_filters"
+            key=f"{day}_filters",
             label_visibility="collapsed"
         )
 
