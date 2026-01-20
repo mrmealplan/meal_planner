@@ -145,6 +145,13 @@ for day in DAYS:
     
     with col1:
         st.markdown(f"**{day}**")
+        st.markdown(
+            f"""
+            <div styles="display:flex; align-items:center; height:100%; font-weight:bold;">{day}
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
 
     with col2:
         st.session_state["filters"][day] = st.multiselect(
