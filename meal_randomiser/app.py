@@ -148,7 +148,7 @@ for day in DAYS:
 
     with col2:
         st.session_state["filters"][day] = st.multiselect(
-            "Filters",
+            "",
             ["Veggie", "Vegan", "Quick", "Skip"],
             default  = st.session_state["filters"][day],
             key=f"{day}_filters"
