@@ -8,7 +8,8 @@ def get_connection():
         dbname="postgres",
         user="postgres",
         password="S7aamiDx8Wz5AjrD",
-        sslmode="require"
+        sslmode="require",
+        sslrootcert="/etc/ssl/certs/ca-certificate.crt"
     )
 
 def get_all_meals():
