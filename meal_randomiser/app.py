@@ -51,7 +51,7 @@ def get_random_meal(filters):
     conn = get_connection()
     cur = conn.cursor
 
-    query = "Select id, name, category FROM meals"
+    query = "SELECT id, name, category FROM meals"
     conditions = []
     params = []
 
