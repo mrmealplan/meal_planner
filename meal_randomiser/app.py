@@ -1,6 +1,9 @@
 import streamlit as st
 import psycopg2
 
+st.write("DEBUG APP ID:", st.runtime.get_instance()._session_mgr._app_id)
+
+
 def get_connection():
     db = st.secrets["database"]
     return psycopg2.connect(
