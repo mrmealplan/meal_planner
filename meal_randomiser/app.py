@@ -28,3 +28,5 @@ st.write("Meals in the database:")
 meals = get_all_meals()
 for name, category in meals:
     st.write(f"- {name} ({category})")
+
+    
