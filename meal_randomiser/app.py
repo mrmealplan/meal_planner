@@ -167,28 +167,25 @@ def reroll_day(day):
 
 
 def clear_all():
-    # Clear suggested meals
     st.session_state["week_plan"] = {day: None for day in DAYS}
-
-    # Reset used sets
     st.session_state["used_meals"] = set()
     st.session_state["used_categories"] = set()
-
-    # Reset filters (Veggie, Vegan, Quick, Skip)
     st.session_state["filters"] = {day: [] for day in DAYS}
-
-    # Reset veggie/vegan flags
     st.session_state["meal_is_veggie"] = {day: False for day in DAYS}
     st.session_state["meal_is_vegan"] = {day: False for day in DAYS}
-
-    # Reset people counts
     st.session_state["people"] = {day: 2 for day in DAYS}
 
-    # Reset override dropdowns
+    # Reset override dropdowns AND filter widgets
     for day in DAYS:
-        key = f"{day}_override"
-        if key in st.session_state:
-            st.session_state[key] = "(keep suggestion)"
+        override_key = f"{day}_override"
+        filter_key = f"{day}_filters"
+
+        if override_key in st.session_state:
+            del st.session_state[override_key]   # <-- THIS FIXES THE DUPLICATION
+
+        if filter_key in st.session_state:
+            del st.session_state[filter_key]     # <-- THIS FIXES filters not clearing
+
 
 
 @st.cache_data
