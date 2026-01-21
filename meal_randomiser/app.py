@@ -230,7 +230,7 @@ st.markdown("---")
 colA, colB = st.columns(2)
 
 with colA:
-    if st.button("Generate full week"):
+    if st.button("Re-roll full week"):
         clear_week()
         generate_week()
 
@@ -238,7 +238,4 @@ with colB:
     if st.button("Clear Week"):
         clear_week()
 
-# Optional: full re-roll button
-if st.button("Re-roll full week"):
-    clear_week()
-    generate_week()
+
