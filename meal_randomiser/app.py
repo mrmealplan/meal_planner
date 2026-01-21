@@ -167,12 +167,21 @@ def reroll_day(day):
 
 
 def clear_all():
+    # Clear suggested meals
     st.session_state["week_plan"] = {day: None for day in DAYS}
+
+    # Reset used sets
     st.session_state["used_meals"] = set()
     st.session_state["used_categories"] = set()
+
+    # Reset filters (Veggie, Vegan, Quick, Skip)
     st.session_state["filters"] = {day: [] for day in DAYS}
+
+    # Reset veggie/vegan flags
     st.session_state["meal_is_veggie"] = {day: False for day in DAYS}
     st.session_state["meal_is_vegan"] = {day: False for day in DAYS}
+
+    # Reset people counts
     st.session_state["people"] = {day: 2 for day in DAYS}
 
     # Reset override dropdowns
@@ -180,7 +189,6 @@ def clear_all():
         key = f"{day}_override"
         if key in st.session_state:
             st.session_state[key] = "(keep suggestion)"
-
 
 
 @st.cache_data
@@ -273,6 +281,14 @@ def format_quantity(qty):
 # ---------------------------------------------------------
 st.title("Weekly meal planner")
 
+st.markdown("---")
+
+#Clear_all button
+if st.button("Clear All"):
+    clear_all()
+
+st.markdown("---")
+
 # Filters + people per day
 for day in DAYS:
     col1, col2, col3 = st.columns([1, 4, 1])
@@ -316,12 +332,6 @@ st.markdown("---")
 if st.button("Generate full week"):
     clear_all()
     generate_week()
-
-st.markdown("---")
-
-# Clear all button
-if st.button("Clear All"):
-    clear_all()
 
 st.markdown("---")
 
