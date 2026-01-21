@@ -372,10 +372,10 @@ if st.button("Create shopping list"):
             # Display on-screen list
             if qty is None:
                 st.write(f"- {ingredient}")
-                checklist_lines.append(f"- [ ] {ingredient}")
+                checklist_lines.append(f"{ingredient}")
             else:
                 display_qty = format_quantity(qty)
-                st.write(f"{ingredient}: {display_qty} {unit or ''}")
+                st.write(f"- {ingredient}: {display_qty} {unit or ''}")
                 checklist_lines.append(f"{ingredient}: {display_qty} {unit or ''}")
 
         # ---- CLEAN COPY UI ----
