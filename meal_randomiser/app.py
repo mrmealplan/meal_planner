@@ -159,6 +159,58 @@ def clear_week():
     st.session_state["used_meals"] = set()
     st.session_state["used_categories"] = set()
 
+def generate_shopping_list():
+    # Collect selected meal names
+    selected_meals = [
+        name for name in st.session_state["week_plan"].values()
+        if name is not None
+    ]
+
+    if not selected_meals:
+        st.warning("No meals selected for the week.")
+        return None
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    # Convert meal names → meal IDs
+    cur.execute(
+        "SELECT id, name FROM meals WHERE name = ANY(%s)",
+        (selected_meals,)
+    )
+    meal_rows = cur.fetchall()
+    meal_ids = [row[0] for row in meal_rows]
+
+    if not meal_ids:
+        st.error("No matching meals found in the database.")
+        return None
+
+    # Fetch grouped ingredients
+    cur.execute("""
+        SELECT 
+            COALESCE(sa.name, 'Other') AS area,
+            ri.name AS ingredient,
+            SUM(i.quantity) AS total_quantity,
+            i.unit
+        FROM ingredients i
+        JOIN raw_ingredients ri ON i.raw_ingredient_id = ri.id
+        LEFT JOIN supermarket_areas sa ON ri.area_id = sa.id
+        WHERE i.meal_id = ANY(%s)
+        GROUP BY sa.name, ri.name, i.unit
+        ORDER BY sa.name, ri.name;
+    """, (meal_ids,))
+
+    rows = cur.fetchall()
+    conn.close()
+
+    return rows
+
+
+
+
+
+
+######################################################################################
 
 #UI code (streamlit layout)
 st.title("Weekly meal planner")
@@ -234,3 +286,21 @@ for day in DAYS:
 
 st.markdown("---")
 
+if st.button("Create shopping list"):
+    shopping_list = generate_shopping_list()
+
+    if shopping_list:
+        st.header("Shopping List")
+
+        current_area = None
+        for area, ingredient, qty, unit in shopping_list:
+            if area != current_area:
+                st.subheader(f"**{area}**")
+                current_area = area
+
+            if qty is None:
+                st.write(f"- {ingredient}")
+            else:
+                st.write(f"- {ingredient}: {qty} {unit or ''}")
+
+st.markdown("---")
