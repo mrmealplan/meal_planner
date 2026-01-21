@@ -188,8 +188,24 @@ if st.button("Generate full week"):
 
 st.markdown("---")
 
-suffix_map = { "Veggie": " (v)", "Vegan": " (ve)" }
+# --- FIXED DISPLAY + BUTTON LOGIC ---
 
+st.markdown("---")
+
+# 1. Detect which re-roll button was clicked
+reroll_clicked = None
+
+for day in DAYS:
+    col1, col2 = st.columns([4,1])
+    with col2:
+        if st.button(f"Re-roll {day}", key=f"{day}_reroll"):
+            reroll_clicked = day
+
+# 2. Apply reroll BEFORE rendering meals
+if reroll_clicked:
+    reroll_day(reroll_clicked)
+
+# 3. Display meals (with suffixes)
 for day in DAYS:
     col1, col2 = st.columns([4,1])
 
@@ -204,15 +220,25 @@ for day in DAYS:
         else:
             st.info("No meal selected.")
 
+    # keep alignment by showing a disabled button
     with col2:
-        if st.button(f"Re-roll {day}", key=f"{day}_reroll"):
-            reroll_day(day)
+        st.button(f"Re-roll {day}", key=f"{day}_reroll_display", disabled=True)
 
+# 4. Generate Week + Clear Week buttons BELOW the meals
 st.markdown("---")
 
-if st.button("Clear Week"):
-    clear_week()
+colA, colB = st.columns(2)
 
+with colA:
+    if st.button("Generate full week"):
+        clear_week()
+        generate_week()
+
+with colB:
+    if st.button("Clear Week"):
+        clear_week()
+
+# Optional: full re-roll button
 if st.button("Re-roll full week"):
     clear_week()
     generate_week()
