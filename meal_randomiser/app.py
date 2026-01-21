@@ -141,7 +141,7 @@ def clear_week():
 st.title("Weekly meal planner")
 
 for day in DAYS:
-    col1, col2, col3 = st.columns([1,3,1])
+    col1, col2 = st.columns([1,4])
     
     with col1:
         st.markdown(
@@ -178,8 +178,15 @@ if st.button("Clear Week"):
     clear_week()
 
 for day in DAYS:
-    meal = st.session_state["week_plan"][day]
-    if meal:
-        st.success(f"{day}: {meal}")
-    else:
-        st.info("No meal selected yet.")
+    col1, col2 = st.columns([4,1])
+
+    with col1:
+        meal = st.session_state["week_plan"][day]
+        if meal:
+            st.success(f"{day}: {meal}")
+        else:
+            st.info("No meal selected yet.")
+
+    with col2:
+        if st.button("Re-roll", key=f"{day}_reroll"):
+            reroll_day(day)
