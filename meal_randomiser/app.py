@@ -17,6 +17,7 @@ def get_connection():
         st.error(f"RAW CONNECTION ERROR: {e}")
         raise
 
+####################################################################
 #SESSION STATE SETUP
 DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 
@@ -41,6 +42,11 @@ if "meal_is_veggie" not in st.session_state:
 if "meal_is_vegan" not in st.session_state:
     st.session_state["meal_is_vegan"] = {day: False for day in DAYS}
 
+if "people" not in st.session_state:
+    st.session_state["people"] = {day: 2 for day in DAYS}  # default 2 people
+
+
+#########################################################################
 #FILTER PRIORITY
 def filter_priority(filters):
     if "Vegan" in filters and "Quick" in filters:
@@ -160,50 +166,72 @@ def clear_week():
     st.session_state["used_categories"] = set()
 
 def generate_shopping_list():
-    # Collect selected meal names
-    selected_meals = [
-        name for name in st.session_state["week_plan"].values()
+    # Collect selected meals + people counts
+    selected = [
+        (day, name, st.session_state["people"][day])
+        for day, name in st.session_state["week_plan"].items()
         if name is not None
     ]
 
-    if not selected_meals:
+    if not selected:
         st.warning("No meals selected for the week.")
         return None
+
+    days, meal_names, people_counts = zip(*selected)
 
     conn = get_connection()
     cur = conn.cursor()
 
-    # Convert meal names → meal IDs
-    cur.execute(
-        "SELECT id, name FROM meals WHERE name = ANY(%s)",
-        (selected_meals,)
-    )
-    meal_rows = cur.fetchall()
-    meal_ids = [row[0] for row in meal_rows]
-
-    if not meal_ids:
-        st.error("No matching meals found in the database.")
-        return None
-
-    # Fetch grouped ingredients
+    # Get meal IDs + default servings
     cur.execute("""
-        SELECT 
-            COALESCE(sa.name, 'Other') AS area,
-            ri.name AS ingredient,
-            SUM(i.quantity) AS total_quantity,
-            i.unit
-        FROM ingredients i
-        JOIN raw_ingredients ri ON i.raw_ingredient_id = ri.id
-        LEFT JOIN supermarket_areas sa ON ri.area_id = sa.id
-        WHERE i.meal_id = ANY(%s)
-        GROUP BY sa.name, ri.name, i.unit
-        ORDER BY sa.name, ri.name;
-    """, (meal_ids,))
+        SELECT id, name, default_servings
+        FROM meals
+        WHERE name = ANY(%s)
+    """, (meal_names,))
+    meal_rows = cur.fetchall()
 
-    rows = cur.fetchall()
+    meal_info = {name: (mid, servings) for mid, name, servings in meal_rows}
+
+    # Build list of (meal_id, people_eating)
+    meal_people_pairs = [
+        (meal_info[name][0], people_counts[i], meal_info[name][1])
+        for i, name in enumerate(meal_names)
+    ]
+
+    # Build dynamic SQL for scaling
+    ingredient_rows = []
+    for meal_id, people, default_servings in meal_people_pairs:
+        cur.execute("""
+            SELECT 
+                ri.name,
+                sa.name AS area,
+                i.quantity * %s::float / %s::float AS scaled_qty,
+                i.unit
+            FROM ingredients i
+            JOIN raw_ingredients ri ON i.raw_ingredient_id = ri.id
+            LEFT JOIN supermarket_areas sa ON ri.area_id = sa.id
+            WHERE i.meal_id = %s
+        """, (people, default_servings, meal_id))
+
+        ingredient_rows.extend(cur.fetchall())
+
     conn.close()
 
-    return rows
+    # Aggregate identical ingredients + units
+    shopping = {}
+    for ingredient, area, qty, unit in ingredient_rows:
+        key = (area or "Other", ingredient, unit)
+        shopping[key] = shopping.get(key, 0) + (qty or 0)
+
+    # Convert dict to sorted list
+    result = sorted(
+        [(area, ingredient, qty, unit) for (area, ingredient, unit), qty in shopping.items()],
+        key=lambda x: (x[0], x[1])
+    )
+
+    return result
+
+    
 
 
 
@@ -216,7 +244,7 @@ def generate_shopping_list():
 st.title("Weekly meal planner")
 
 for day in DAYS:
-    col1, col2 = st.columns([1,4])
+    col1, col2, col3 = st.columns([1,4,1])
     
     with col1:
         st.markdown(
@@ -241,6 +269,15 @@ for day in DAYS:
             key=f"{day}_filters",
             label_visibility="collapsed"
         )    
+
+    with col3:
+        st.session_state["people"][day] = st.number_input(
+        f"People eating on {day}",
+        min_value=1,
+        max_value=10,
+        value=st.session_state["people"][day],
+        key=f"{day}_people"
+    )
 
 st.markdown("---")
 
