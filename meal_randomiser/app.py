@@ -2,53 +2,43 @@ import streamlit as st
 import psycopg2
 from st_copy import copy_button
 
-#GET CONNECTION
+# ---------------------------------------------------------
+# DB CONNECTION
+# ---------------------------------------------------------
+@st.cache_resource
 def get_connection():
     db = st.secrets["database"]
-    try:
-        return psycopg2.connect(
-            host=db["host"],
-            port=db["port"],
-            dbname=db["dbname"],
-            user=db["user"],
-            password=db["password"],
-            sslmode="require"
-        )
-    except Exception as e:
-        st.error(f"RAW CONNECTION ERROR: {e}")
-        raise
+    return psycopg2.connect(
+        host=db["host"],
+        port=db["port"],
+        dbname=db["dbname"],
+        user=db["user"],
+        password=db["password"],
+        sslmode="require"
+    )
 
-####################################################################
-#SESSION STATE SETUP
+# ---------------------------------------------------------
+# CONSTANTS & SESSION STATE
+# ---------------------------------------------------------
 DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 
-if "week_plan" not in st.session_state:
-    st.session_state["week_plan"] = {day: None for day in DAYS}
+SESSION_DEFAULTS = {
+    "week_plan": {day: None for day in DAYS},
+    "used_meals": set(),
+    "used_categories": set(),
+    "filters": {day: [] for day in DAYS},
+    "meal_is_veggie": {day: False for day in DAYS},
+    "meal_is_vegan": {day: False for day in DAYS},
+    "people": {day: 2 for day in DAYS},
+}
 
-if "used_meals" not in st.session_state:
-    st.session_state["used_meals"] = set()
+for key, default in SESSION_DEFAULTS.items():
+    if key not in st.session_state:
+        st.session_state[key] = default
 
-if "used_categories" not in st.session_state:
-    st.session_state["used_categories"] = set()
-
-if "filters" not in st.session_state:
-    st.session_state["filters"] = {day: [] for day in DAYS}
-
-if "meal_categories" not in st.session_state:
-    st.session_state["meal_categories"] = {day: "" for day in DAYS}
-
-if "meal_is_veggie" not in st.session_state:
-    st.session_state["meal_is_veggie"] = {day: False for day in DAYS} 
-    
-if "meal_is_vegan" not in st.session_state:
-    st.session_state["meal_is_vegan"] = {day: False for day in DAYS}
-
-if "people" not in st.session_state:
-    st.session_state["people"] = {day: 2 for day in DAYS}  # default 2 people
-
-
-#########################################################################
-#FILTER PRIORITY
+# ---------------------------------------------------------
+# HELPERS
+# ---------------------------------------------------------
 def filter_priority(filters):
     if "Vegan" in filters and "Quick" in filters:
         return 1
@@ -61,6 +51,7 @@ def filter_priority(filters):
     if "Quick" in filters:
         return 5
     return 6
+
 
 def get_random_meal(filters):
     conn = get_connection()
@@ -80,7 +71,6 @@ def get_random_meal(filters):
     conditions = []
     params = []
 
-    # Multi-filter logic
     if "Veggie" in filters:
         conditions.append("m.is_veggie = TRUE")
     if "Vegan" in filters:
@@ -88,13 +78,11 @@ def get_random_meal(filters):
     if "Quick" in filters:
         conditions.append("m.is_quick = TRUE")
 
-    # Avoid duplicate meals
     if st.session_state["used_meals"]:
         placeholders = ",".join(["%s"] * len(st.session_state["used_meals"]))
         conditions.append(f"m.id NOT IN ({placeholders})")
         params.extend(list(st.session_state["used_meals"]))
 
-    # Avoid duplicate categories
     if st.session_state["used_categories"]:
         placeholders = ",".join(["%s"] * len(st.session_state["used_categories"]))
         conditions.append(f"c.name NOT IN ({placeholders})")
@@ -112,10 +100,8 @@ def get_random_meal(filters):
     return meal
 
 
-#GENERATE WEEK
 def generate_week():
-          
-    ordered_days=sorted(
+    ordered_days = sorted(
         DAYS,
         key=lambda d: filter_priority(st.session_state["filters"][d])
     )
@@ -139,11 +125,10 @@ def generate_week():
         st.session_state["week_plan"][day] = meal_name
         st.session_state["used_meals"].add(meal_id)
         st.session_state["used_categories"].add(category)
-        st.session_state["meal_is_veggie"][day] = is_veggie 
+        st.session_state["meal_is_veggie"][day] = is_veggie
         st.session_state["meal_is_vegan"][day] = is_vegan
-    
 
-#RE ROLL DAY
+
 def reroll_day(day):
     filters = st.session_state["filters"][day]
     meal = get_random_meal(filters)
@@ -151,23 +136,37 @@ def reroll_day(day):
     if meal is None:
         st.warning(f"No meals match the criteria for {day}.")
         return
-    
+
     meal_id, meal_name, category, is_veggie, is_vegan = meal
-    
+
     st.session_state["week_plan"][day] = meal_name
     st.session_state["used_meals"].add(meal_id)
     st.session_state["used_categories"].add(category)
     st.session_state["meal_is_veggie"][day] = is_veggie
     st.session_state["meal_is_vegan"][day] = is_vegan
 
-#CLEAR WEEK
-def clear_week():
+
+def clear_all():
     st.session_state["week_plan"] = {day: None for day in DAYS}
     st.session_state["used_meals"] = set()
     st.session_state["used_categories"] = set()
+    st.session_state["filters"] = {day: [] for day in DAYS}
+    st.session_state["meal_is_veggie"] = {day: False for day in DAYS}
+    st.session_state["meal_is_vegan"] = {day: False for day in DAYS}
+    st.session_state["people"] = {day: 2 for day in DAYS}
+
+
+@st.cache_data
+def get_all_meal_names():
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT name FROM meals ORDER BY name")
+    rows = cur.fetchall()
+    conn.close()
+    return [r[0] for r in rows]
+
 
 def generate_shopping_list():
-    # Collect selected meals + people counts
     selected = [
         (day, name, st.session_state["people"][day])
         for day, name in st.session_state["week_plan"].items()
@@ -183,27 +182,20 @@ def generate_shopping_list():
     conn = get_connection()
     cur = conn.cursor()
 
-    # Get meal IDs + default servings
     cur.execute("""
         SELECT id, name, default_servings
         FROM meals
         WHERE name = ANY(%s)
     """, (list(meal_names),))
 
-
     meal_rows = cur.fetchall()
-
     meal_info = {name: (mid, servings) for mid, name, servings in meal_rows}
 
-    # Build list of (meal_id, people_eating)
-    meal_people_pairs = [
-        (meal_info[name][0], people_counts[i], meal_info[name][1])
-        for i, name in enumerate(meal_names)
-    ]
-
-    # Build dynamic SQL for scaling
     ingredient_rows = []
-    for meal_id, people, default_servings in meal_people_pairs:
+    for i, name in enumerate(meal_names):
+        meal_id, default_servings = meal_info[name]
+        people = people_counts[i]
+
         cur.execute("""
             SELECT 
                 ri.name,
@@ -220,8 +212,6 @@ def generate_shopping_list():
 
     conn.close()
 
-    # Aggregate identical ingredients + units
-# Aggregate identical ingredients + units
     shopping = {}
 
     for ingredient, area, qty, unit in ingredient_rows:
@@ -229,16 +219,13 @@ def generate_shopping_list():
         key = (area, ingredient, unit)
 
         if qty is None:
-            # No-quantity items should not be summed
             shopping[key] = {"qty": None}
         else:
-            # Sum quantities normally
             if key not in shopping or shopping[key]["qty"] is None:
                 shopping[key] = {"qty": qty}
             else:
                 shopping[key]["qty"] += qty
 
-    # Convert dict to sorted list
     result = sorted(
         [(area, ingredient, data["qty"], unit) for (area, ingredient, unit), data in shopping.items()],
         key=lambda x: (x[0], x[1])
@@ -247,15 +234,6 @@ def generate_shopping_list():
     return result
 
 
-    # Convert dict to sorted list
-    result = sorted(
-        [(area, ingredient, qty, unit) for (area, ingredient, unit), qty in shopping.items()],
-        key=lambda x: (x[0], x[1])
-    )
-
-    return result
-
-    
 def format_quantity(qty):
     if qty is None:
         return None
@@ -263,19 +241,15 @@ def format_quantity(qty):
         return int(qty)
     return round(qty, 2)
 
-
-
-
-
-
-######################################################################################
-
-#UI code (streamlit layout)
+# ---------------------------------------------------------
+# UI
+# ---------------------------------------------------------
 st.title("Weekly meal planner")
 
+# Filters + people per day
 for day in DAYS:
-    col1, col2, col3 = st.columns([1,4,1])
-    
+    col1, col2, col3 = st.columns([1, 4, 1])
+
     with col1:
         st.markdown(
             f"""
@@ -295,97 +269,104 @@ for day in DAYS:
         st.session_state["filters"][day] = st.multiselect(
             "",
             ["Veggie", "Vegan", "Quick", "Skip"],
-            default  = st.session_state["filters"][day],
+            default=st.session_state["filters"][day],
             key=f"{day}_filters",
             label_visibility="collapsed"
-        )    
+        )
 
     with col3:
         st.session_state["people"][day] = st.number_input(
-        f"People eating on {day}",
-        min_value=1,
-        max_value=10,
-        value=st.session_state["people"][day],
-        key=f"{day}_people"
-    )
+            f"People eating on {day}",
+            min_value=1,
+            max_value=10,
+            value=st.session_state["people"][day],
+            key=f"{day}_people"
+        )
 
 st.markdown("---")
 
+# Generate week
 if st.button("Generate full week"):
-    clear_week()
+    clear_all()
     generate_week()
 
 st.markdown("---")
 
-col1, col2 = st.columns([1,1])
-
-with col1:
-    if st.button("Clear Week"):
-        clear_week()
-
-with col2:
-    if st.button("Re-roll full week"):
-        clear_week()
-        generate_week()
+# Clear all button
+if st.button("Clear All"):
+    clear_all()
 
 st.markdown("---")
 
-
-suffix_map = { "Veggie": " (v)", "Vegan": " (ve)" }
+# Day-by-day reroll + override
+all_meals = get_all_meal_names()
 
 for day in DAYS:
-    col1, col2 = st.columns([2,4])
-    
+    col1, col2 = st.columns([2, 4])
+
     with col1:
         if st.button(f"Re-roll {day}", key=f"{day}_reroll"):
             reroll_day(day)
 
     with col2:
-        meal = st.session_state["week_plan"][day]
-        is_veggie = st.session_state["meal_is_veggie"].get(day, False)
-        is_vegan = st.session_state["meal_is_vegan"].get(day, False)
-        suffix = " (ve)" if is_vegan else " (v)" if is_veggie else ""
+        current_meal = st.session_state["week_plan"][day]
 
-        if meal:
-            st.success(f"{day}: {meal}{suffix}")
+        override = st.selectbox(
+            f"{day} meal",
+            options=["(keep suggestion)"] + all_meals,
+            index=0,
+            key=f"{day}_override"
+        )
+
+        if override != "(keep suggestion)":
+            st.session_state["week_plan"][day] = override
+
+            conn = get_connection()
+            cur = conn.cursor()
+            cur.execute("""
+                SELECT is_veggie, is_vegan
+                FROM meals
+                WHERE name = %s
+            """, (override,))
+            flags = cur.fetchone()
+            conn.close()
+
+            if flags:
+                st.session_state["meal_is_veggie"][day] = flags[0]
+                st.session_state["meal_is_vegan"][day] = flags[1]
+
+        final_meal = st.session_state["week_plan"][day]
+        if final_meal:
+            suffix = " (ve)" if st.session_state["meal_is_vegan"][day] else \
+                     " (v)" if st.session_state["meal_is_veggie"][day] else ""
+            st.success(f"{day}: {final_meal}{suffix}")
         else:
             st.info("No meal selected.")
 
 st.markdown("---")
 
+# Shopping list
 if st.button("Create shopping list"):
     shopping_list = generate_shopping_list()
 
     if shopping_list:
         st.header("Shopping List")
 
-        current_area = None
-        checklist_lines = []  # <-- for copyable version
-
+        # Build copyable text first
+        checklist_lines = []
         for area, ingredient, qty, unit in shopping_list:
-            # Display section header
-            if area != current_area:
-                st.subheader(f"**{area}**")
-                current_area = area
-
-            # Display on-screen list
             if qty is None:
-                st.write(f"- {ingredient}")
                 checklist_lines.append(f"{ingredient}")
             else:
                 display_qty = format_quantity(qty)
-                st.write(f"- {ingredient}: {display_qty} {unit or ''}")
                 checklist_lines.append(f"{ingredient}: {display_qty} {unit or ''}")
 
-        # ---- CLEAN COPY UI ----
         full_text = "\n".join(checklist_lines)
 
-        # Create two columns: label on left, button on right
+        # --- COPY BUTTON ABOVE THE LIST ---
         label_col, button_col = st.columns([4, 1])
-
         with label_col:
             st.markdown("### Copy your shopping list")
-
         with button_col:
             copy_button(
                 full_text,
@@ -394,9 +375,18 @@ if st.button("Create shopping list"):
                 icon="st"
             )
 
+        # --- NOW DISPLAY THE LIST ---
+        current_area = None
+        for area, ingredient, qty, unit in shopping_list:
+            if area != current_area:
+                st.subheader(f"**{area}**")
+                current_area = area
 
-
-        
+            if qty is None:
+                st.write(f"- {ingredient}")
+            else:
+                display_qty = format_quantity(qty)
+                st.write(f"- {ingredient}: {display_qty} {unit or ''}")
 
 
 st.markdown("---")
