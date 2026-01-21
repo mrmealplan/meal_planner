@@ -187,7 +187,9 @@ def generate_shopping_list():
         SELECT id, name, default_servings
         FROM meals
         WHERE name = ANY(%s)
-    """, (meal_names,))
+    """, (list(meal_names),))
+
+
     meal_rows = cur.fetchall()
 
     meal_info = {name: (mid, servings) for mid, name, servings in meal_rows}
