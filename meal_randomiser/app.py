@@ -8,14 +8,26 @@ from st_copy import copy_button
 @st.cache_resource
 def get_connection():
     db = st.secrets["database"]
-    return psycopg2.connect(
-        host=db["host"],
-        port=db["port"],
-        dbname=db["dbname"],
-        user=db["user"],
-        password=db["password"],
-        sslmode="require"
-    )
+
+    def connect():
+        return psycopg2.connect(
+            host=db["host"],
+            port=db["port"],
+            dbname=db["dbname"],
+            user=db["user"],
+            password=db["password"],
+            sslmode="require"
+        )
+
+    conn = connect()
+
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT 1;")
+    except Exception:
+        conn = connect()
+
+    return conn
 
 # ---------------------------------------------------------
 # CONSTANTS & SESSION STATE
