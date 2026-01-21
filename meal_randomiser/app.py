@@ -166,7 +166,7 @@ def reroll_day(day):
     st.session_state["meal_is_vegan"][day] = is_vegan
 
 
-ddef clear_all():
+def clear_all():
     # Core state
     st.session_state["week_plan"] = {day: None for day in DAYS}
     st.session_state["used_meals"] = set()
