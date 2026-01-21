@@ -208,5 +208,11 @@ for day in DAYS:
         if st.button(f"Re-roll {day}", key=f"{day}_reroll"):
             reroll_day(day)
 
+st.markdown("---")
+
 if st.button("Clear Week"):
     clear_week()
+
+if st.button("Re-roll full week"):
+    clear_week()
+    generate_week()
