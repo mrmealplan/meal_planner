@@ -6,7 +6,7 @@ from st_copy import copy_button
 # DB CONNECTION
 # ---------------------------------------------------------
 @st.cache_resource
-def get_connection():
+def get_connection_factory():
     db = st.secrets["database"]
 
     def connect():
@@ -19,6 +19,11 @@ def get_connection():
             sslmode="require"
         )
 
+    return connect
+
+
+def get_connection():
+    connect = get_connection_factory()
     conn = connect()
 
     # Test connection
@@ -29,6 +34,7 @@ def get_connection():
         conn = connect()
 
     return conn
+
 
 
 # ---------------------------------------------------------
