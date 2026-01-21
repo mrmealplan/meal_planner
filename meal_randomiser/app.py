@@ -167,7 +167,6 @@ def reroll_day(day):
 
 
 def clear_all():
-    # Core state
     st.session_state["week_plan"] = {day: None for day in DAYS}
     st.session_state["used_meals"] = set()
     st.session_state["used_categories"] = set()
@@ -176,7 +175,7 @@ def clear_all():
     st.session_state["meal_is_vegan"] = {day: False for day in DAYS}
     st.session_state["people"] = {day: 2 for day in DAYS}
 
-    # WIDGET STATE: delete keys so Streamlit fully resets them
+    # DELETE widget keys so Streamlit forgets them
     for day in DAYS:
         filter_key = f"{day}_filters"
         override_key = f"{day}_override"
@@ -186,6 +185,7 @@ def clear_all():
 
         if override_key in st.session_state:
             del st.session_state[override_key]
+
 
 
 
@@ -286,6 +286,7 @@ st.markdown("---")
 #Clear_all button
 if st.button("Clear All"):
     clear_all()
+    st.experimental_rerun()
 
 st.markdown("---")
 
