@@ -183,15 +183,15 @@ suffix_map = { "Veggie": " (v)", "Vegan": " (ve)" }
 for day in DAYS:
     col1, col2 = st.columns([4,1])
 
-with col1:
-    meal = st.session_state["week_plan"][day]
-    category = st.session_state["meal_categories"].get(day, "")
-    suffix = suffix_map.get(category, "")
+    with col1:
+        meal = st.session_state["week_plan"][day]
+        category = st.session_state["meal_categories"].get(day, "")
+        suffix = suffix_map.get(category, "")
 
-    if meal:
-        st.success(f"{day}: {meal}{suffix}")
-    else:
-        st.info("No meal selected.")
+        if meal:
+            st.success(f"{day}: {meal}{suffix}")
+        else:
+            st.info("No meal selected.")
 
     with col2:
         if st.button("Re-roll", key=f"{day}_reroll"):
