@@ -366,7 +366,6 @@ if st.button("Create shopping list"):
             # Display section header
             if area != current_area:
                 st.subheader(f"**{area}**")
-                checklist_lines.append(f"\n## {area}\n")
                 current_area = area
 
             # Display on-screen list
