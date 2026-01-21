@@ -32,6 +32,9 @@ if "used_categories" not in st.session_state:
 if "filters" not in st.session_state:
     st.session_state["filters"] = {day: [] for day in DAYS}
 
+if "meal_categories" not in st.session_state:
+    st.session_state["meal_categories"] = {day: "" for day in DAYS}
+
 #FILTER PRIORITY
 def filter_priority(filters):
     if "Vegan" in filters and "Quick" in filters:
