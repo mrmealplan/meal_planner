@@ -223,7 +223,15 @@ def generate_shopping_list():
     shopping = {}
     for ingredient, area, qty, unit in ingredient_rows:
         key = (area or "Other", ingredient, unit)
-        shopping[key] = shopping.get(key, 0) + (qty or 0)
+    if qty is None:
+        # If ANY instance has no quantity, treat as no-quantity item
+        shopping[key] = None
+    else:
+        # Normal summing
+        if shopping.get(key) is None:
+            shopping[key] = qty
+        else:
+            shopping[key] = shopping.get(key, 0) + qty
 
     # Convert dict to sorted list
     result = sorted(
@@ -234,6 +242,12 @@ def generate_shopping_list():
     return result
 
     
+def format_quantity(qty):
+    if qty is None:
+        return None
+    if float(qty).is_integer():
+        return int(qty)
+    return round(qty, 2)
 
 
 
@@ -332,14 +346,28 @@ if st.button("Create shopping list"):
         st.header("Shopping List")
 
         current_area = None
+        checklist_lines = []  # <-- for copyable version
+
         for area, ingredient, qty, unit in shopping_list:
+            # Display section header
             if area != current_area:
                 st.subheader(f"**{area}**")
+                checklist_lines.append(f"\n## {area}\n")
                 current_area = area
 
+            # Display on-screen list
             if qty is None:
                 st.write(f"- {ingredient}")
+                checklist_lines.append(f"- [ ] {ingredient}")
             else:
-                st.write(f"- {ingredient}: {qty} {unit or ''}")
+                display_qty = format_quantity(qty)
+                st.write(f"- {ingredient}: {display_qty} {unit or ''}")
+                checklist_lines.append(f"- [ ] {ingredient}: {display_qty} {unit or ''}")
+
+        # ---- COPY TO CLIPBOARD BOX ----
+        full_text = "\n".join(checklist_lines)
+        st.text_area("Copy your shopping list", full_text, height=300)
+
+
 
 st.markdown("---")
