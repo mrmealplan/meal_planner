@@ -55,33 +55,42 @@ def filter_priority(filters):
         return 5
     return 6
 
-#GET RANDOM MEAL
 def get_random_meal(filters):
     conn = get_connection()
     cur = conn.cursor()
 
-    query = "SELECT id, name, category, is_veggie, is_vegan FROM meals"
+    query = """
+        SELECT 
+            m.id, 
+            m.name, 
+            c.name AS category, 
+            m.is_veggie, 
+            m.is_vegan
+        FROM meals m
+        JOIN categories c ON m.category_id = c.id
+    """
+
     conditions = []
     params = []
 
-    #multi-filter logic
+    # Multi-filter logic
     if "Veggie" in filters:
-        conditions.append("is_veggie = TRUE")
+        conditions.append("m.is_veggie = TRUE")
     if "Vegan" in filters:
-        conditions.append("is_vegan = TRUE")
+        conditions.append("m.is_vegan = TRUE")
     if "Quick" in filters:
-        conditions.append("is_quick = TRUE")
+        conditions.append("m.is_quick = TRUE")
 
-    #Avoid duplucate meals
+    # Avoid duplicate meals
     if st.session_state["used_meals"]:
-        placeholders = ",".join(["%s"]*len(st.session_state["used_meals"]))
-        conditions.append(f"id NOT IN ({placeholders})")
+        placeholders = ",".join(["%s"] * len(st.session_state["used_meals"]))
+        conditions.append(f"m.id NOT IN ({placeholders})")
         params.extend(list(st.session_state["used_meals"]))
 
-    #Avoid duplicate categories (meal types)
+    # Avoid duplicate categories
     if st.session_state["used_categories"]:
-        placeholders = ",".join(["%s"]*len(st.session_state["used_categories"]))
-        conditions.append(f"category NOT IN ({placeholders})")
+        placeholders = ",".join(["%s"] * len(st.session_state["used_categories"]))
+        conditions.append(f"c.name NOT IN ({placeholders})")
         params.extend(list(st.session_state["used_categories"]))
 
     if conditions:
@@ -93,7 +102,8 @@ def get_random_meal(filters):
     meal = cur.fetchone()
     conn.close()
 
-    return meal # may be NONE
+    return meal
+
 
 #GENERATE WEEK
 def generate_week():
