@@ -146,7 +146,12 @@ for day in DAYS:
     with col1:
         st.markdown(
             f"""
-            <div style="display:flex; align-items:center; height:100%; font-weight:bold;">
+            <div style="
+            display:flex; 
+            align-items:center; 
+            height:38px;
+            font-weight:bold;
+            ">
                 {day}
             </div>
             """,
@@ -162,14 +167,11 @@ for day in DAYS:
             label_visibility="collapsed"
         )    
 
-st.markdown("---")
-
 if st.button("Generate full week"):
     clear_week()
     generate_week()
 
-if st.button("Clear Week"):
-    clear_week()
+st.markdown("---")
 
 for day in DAYS:
     col1, col2 = st.columns([4,1])
@@ -184,3 +186,6 @@ for day in DAYS:
     with col2:
         if st.button("Re-roll", key=f"{day}_reroll"):
             reroll_day(day)
+
+if st.button("Clear Week"):
+    clear_week()
