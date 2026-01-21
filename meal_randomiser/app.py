@@ -21,6 +21,7 @@ def get_connection():
 
     conn = connect()
 
+    # Test connection
     try:
         cur = conn.cursor()
         cur.execute("SELECT 1;")
@@ -28,6 +29,7 @@ def get_connection():
         conn = connect()
 
     return conn
+
 
 # ---------------------------------------------------------
 # CONSTANTS & SESSION STATE
@@ -166,6 +168,13 @@ def clear_all():
     st.session_state["meal_is_veggie"] = {day: False for day in DAYS}
     st.session_state["meal_is_vegan"] = {day: False for day in DAYS}
     st.session_state["people"] = {day: 2 for day in DAYS}
+
+    # Reset override dropdowns
+    for day in DAYS:
+        key = f"{day}_override"
+        if key in st.session_state:
+            st.session_state[key] = "(keep suggestion)"
+
 
 
 @st.cache_data
