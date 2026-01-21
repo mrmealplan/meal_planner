@@ -35,6 +35,12 @@ if "filters" not in st.session_state:
 if "meal_categories" not in st.session_state:
     st.session_state["meal_categories"] = {day: "" for day in DAYS}
 
+if "meal_is_veggie" not in st.session_state:
+    st.session_state["meal_is_veggie"] = {day: False for day in DAYS} 
+    
+if "meal_is_vegan" not in st.session_state:
+    st.session_state["meal_is_vegan"] = {day: False for day in DAYS}
+
 #FILTER PRIORITY
 def filter_priority(filters):
     if "Vegan" in filters and "Quick" in filters:
@@ -54,7 +60,7 @@ def get_random_meal(filters):
     conn = get_connection()
     cur = conn.cursor()
 
-    query = "SELECT id, name, category FROM meals"
+    query = "SELECT id, name, category, is_veggie, is_vegan FROM meals"
     conditions = []
     params = []
 
@@ -111,11 +117,13 @@ def generate_week():
             st.session_state["week_plan"][day] = None
             continue
 
-        meal_id, meal_name, category = meal
+        meal_id, meal_name, category, is_veggie, is_vegan = meal
 
         st.session_state["week_plan"][day] = meal_name
         st.session_state["used_meals"].add(meal_id)
         st.session_state["used_categories"].add(category)
+        st.session_state["meal_is_veggie"][day] = is_veggie 
+        st.session_state["meal_is_vegan"][day] = is_vegan
     
 
 #RE ROLL DAY
@@ -127,11 +135,13 @@ def reroll_day(day):
         st.warning(f"No meals match the criteria for {day}.")
         return
     
-    meal_id, meal_name, category = meal
+    meal_id, meal_name, category, is_veggie, is_vegan = meal
     
     st.session_state["week_plan"][day] = meal_name
     st.session_state["used_meals"].add(meal_id)
     st.session_state["used_categories"].add(category)
+    st.session_state["meal_is_veggie"][day] = is_veggie
+    st.session_state["meal_is_vegan"][day] = is_vegan
 
 #CLEAR WEEK
 def clear_week():
@@ -185,8 +195,9 @@ for day in DAYS:
 
     with col1:
         meal = st.session_state["week_plan"][day]
-        category = st.session_state["meal_categories"].get(day, "")
-        suffix = suffix_map.get(category, "")
+        is_veggie = st.session_state["meal_is_veggie"].get(day, False)
+        is_vegan = st.session_state["meal_is_vegan"].get(day, False)
+        suffix = " (ve)" if is_vegan else " (v)" if is_veggie else ""
 
         if meal:
             st.success(f"{day}: {meal}{suffix}")
