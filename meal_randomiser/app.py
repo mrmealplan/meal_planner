@@ -1,5 +1,6 @@
 import streamlit as st
 import psycopg2
+from st_copy import copy_button
 
 #GET CONNECTION
 def get_connection():
@@ -381,13 +382,14 @@ if st.button("Create shopping list"):
         full_text = "\n".join(checklist_lines)
         st.text_area("Copy your shopping list", full_text, height=300)
 
-        # Visible copy button
-        st.markdown("""
-            <button onclick="navigator.clipboard.writeText(document.querySelector('textarea').value)"
-                    style="margin-top:10px;padding:8px 16px;font-size:16px;">
-                Copy to clipboard
-            </button>
-        """, unsafe_allow_html=True)
+        # Working copy button using st-copy
+        copy_button(
+            full_text,
+            tooltip="Copy shopping list",
+            copied_label="Copied!",
+            icon="st"
+        )
+
 
         
 
