@@ -160,13 +160,7 @@ for day in DAYS:
             default  = st.session_state["filters"][day],
             key=f"{day}_filters",
             label_visibility="collapsed"
-        )
-
-    with col3:
-        if st.button("Re-roll", key=f"{day}_reroll"):
-            reroll_day(day)
-
-    
+        )    
 
 st.markdown("---")
 
