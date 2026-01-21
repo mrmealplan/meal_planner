@@ -220,18 +220,31 @@ def generate_shopping_list():
     conn.close()
 
     # Aggregate identical ingredients + units
+# Aggregate identical ingredients + units
     shopping = {}
+
     for ingredient, area, qty, unit in ingredient_rows:
-        key = (area or "Other", ingredient, unit)
-    if qty is None:
-        # If ANY instance has no quantity, treat as no-quantity item
-        shopping[key] = None
-    else:
-        # Normal summing
-        if shopping.get(key) is None:
-            shopping[key] = qty
+        area = area or "Other"
+        key = (area, ingredient, unit)
+
+        if qty is None:
+            # No-quantity items should not be summed
+            shopping[key] = {"qty": None}
         else:
-            shopping[key] = shopping.get(key, 0) + qty
+            # Sum quantities normally
+            if key not in shopping or shopping[key]["qty"] is None:
+                shopping[key] = {"qty": qty}
+            else:
+                shopping[key]["qty"] += qty
+
+    # Convert dict to sorted list
+    result = sorted(
+        [(area, ingredient, data["qty"], unit) for (area, ingredient, unit), data in shopping.items()],
+        key=lambda x: (x[0], x[1])
+    )
+
+    return result
+
 
     # Convert dict to sorted list
     result = sorted(
@@ -368,6 +381,15 @@ if st.button("Create shopping list"):
         full_text = "\n".join(checklist_lines)
         st.text_area("Copy your shopping list", full_text, height=300)
 
+        # Visible copy button
+        st.markdown("""
+            <button onclick="navigator.clipboard.writeText(document.querySelector('textarea').value)"
+                    style="margin-top:10px;padding:8px 16px;font-size:16px;">
+                Copy to clipboard
+            </button>
+        """, unsafe_allow_html=True)
+
+        
 
 
 st.markdown("---")
