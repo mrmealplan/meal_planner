@@ -378,17 +378,23 @@ if st.button("Create shopping list"):
                 st.write(f"- {ingredient}: {display_qty} {unit or ''}")
                 checklist_lines.append(f"- [ ] {ingredient}: {display_qty} {unit or ''}")
 
-        # ---- COPY TO CLIPBOARD BOX ----
+        # ---- CLEAN COPY UI ----
         full_text = "\n".join(checklist_lines)
-        st.text_area("Copy your shopping list", full_text, height=300)
 
-        # Working copy button using st-copy
-        copy_button(
-            full_text,
-            tooltip="Copy shopping list",
-            copied_label="Copied!",
-            icon="st"
-        )
+        # Create two columns: label on left, button on right
+        label_col, button_col = st.columns([4, 1])
+
+        with label_col:
+            st.markdown("### Copy your shopping list")
+
+        with button_col:
+            copy_button(
+                full_text,
+                tooltip="Copy shopping list",
+                copied_label="Copied!",
+                icon="st"
+            )
+
 
 
         
