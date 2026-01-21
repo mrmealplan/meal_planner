@@ -166,7 +166,8 @@ def reroll_day(day):
     st.session_state["meal_is_vegan"][day] = is_vegan
 
 
-def clear_all():
+ddef clear_all():
+    # Core state
     st.session_state["week_plan"] = {day: None for day in DAYS}
     st.session_state["used_meals"] = set()
     st.session_state["used_categories"] = set()
@@ -175,16 +176,16 @@ def clear_all():
     st.session_state["meal_is_vegan"] = {day: False for day in DAYS}
     st.session_state["people"] = {day: 2 for day in DAYS}
 
-    # Reset override dropdowns AND filter widgets
+    # WIDGET STATE: delete keys so Streamlit fully resets them
     for day in DAYS:
-        override_key = f"{day}_override"
         filter_key = f"{day}_filters"
-
-        if override_key in st.session_state:
-            del st.session_state[override_key]   # <-- THIS FIXES THE DUPLICATION
+        override_key = f"{day}_override"
 
         if filter_key in st.session_state:
-            del st.session_state[filter_key]     # <-- THIS FIXES filters not clearing
+            del st.session_state[filter_key]
+
+        if override_key in st.session_state:
+            del st.session_state[override_key]
 
 
 
@@ -192,10 +193,12 @@ def clear_all():
 def get_all_meal_names():
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute("SELECT name FROM meals ORDER BY name")
+    cur.execute("SELECT DISTINCT name FROM meals ORDER BY name")
     rows = cur.fetchall()
     conn.close()
-    return [r[0] for r in rows]
+    # ensure uniqueness at Python level too
+    return sorted({r[0] for r in rows})
+
 
 
 def generate_shopping_list():
@@ -306,13 +309,15 @@ for day in DAYS:
         )
 
     with col2:
-        st.session_state["filters"][day] = st.multiselect(
+        selected = st.multiselect(
             "",
             ["Veggie", "Vegan", "Quick", "Skip"],
-            default=st.session_state["filters"][day],
             key=f"{day}_filters",
             label_visibility="collapsed"
-        )
+        )   
+
+        st.session_state["filters"][day] = selected
+
 
     with col3:
         st.session_state["people"][day] = st.number_input(
@@ -348,7 +353,6 @@ for day in DAYS:
         override = st.selectbox(
             f"{day} meal",
             options=["(keep suggestion)"] + all_meals,
-            index=0,
             key=f"{day}_override"
         )
 
