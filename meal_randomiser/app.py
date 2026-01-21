@@ -205,7 +205,7 @@ for day in DAYS:
             st.info("No meal selected.")
 
     with col2:
-        if st.button("Re-roll", key=f"{day}_reroll"):
+        if st.button(f"Re-roll {day}", key=f"{day}_reroll"):
             reroll_day(day)
 
 if st.button("Clear Week"):
