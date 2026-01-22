@@ -34,13 +34,7 @@ def clear_all():
         st.session_state[f"{day}_filters"] = []
         st.session_state[f"{day}_override"] = False
         st.session_state[f"{day}_people"] = 2
-        for key in (
-            f"{day}_filters",
-            f"{day}_override",
-            f"{day}_people"
-        ):
-            if key in st.session_state:
-                del st.session_state[key]
+
 
 def reset_for_generation():
     # Reset only the state needed for generating a new week
@@ -54,4 +48,5 @@ def reset_for_generation():
     # Do NOT touch people
     # Do NOT delete filter widget keys
     # Do NOT delete override widget keys
+
 
