@@ -8,6 +8,7 @@ from modules.meal_logic import generate_week, reroll_day
 from modules.shopping import generate_shopping_list, format_quantity
 from modules.utils import clear_all
 from modules.constants import DAYS
+from utils import reset_for_generation
 
 
 ######################################################################
@@ -104,7 +105,7 @@ st.markdown("---")
 
 # Generate week - button to generate a full week plan
 if st.button("Generate full week"):
-    clear_all()
+    reset_for_generation()
     generate_week()
 
 st.markdown("---")
