@@ -43,6 +43,23 @@ st.markdown("---")
 if "filters" not in st.session_state:
     st.session_state["filters"] = {day: [] for day in DAYS}
 
+# Ensure people dict always exists
+if "people" not in st.session_state:
+    st.session_state["people"] = {day: 2 for day in DAYS}
+
+# Ensure week_plan always exists
+if "week_plan" not in st.session_state:
+    st.session_state["week_plan"] = {day: None for day in DAYS}
+
+# Ensure veggie flags always exist
+if "meal_is_veggie" not in st.session_state:
+    st.session_state["meal_is_veggie"] = {day: False for day in DAYS}
+
+# Ensure vegan flags always exist
+if "meal_is_vegan" not in st.session_state:
+    st.session_state["meal_is_vegan"] = {day: False for day in DAYS}
+
+
 
 # Filters + people per day
 for day in DAYS:
