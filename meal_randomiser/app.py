@@ -2,8 +2,9 @@ import streamlit as st
 import psycopg2
 from st_copy import copy_button
 
-if "clear_trigger" not in st.session_state:
-    st.session_state.clear_trigger = False
+if "do_clear" not in st.session_state:
+    st.session_state.do_clear = False
+
 
 
 # ---------------------------------------------------------
@@ -290,7 +291,10 @@ st.markdown("---")
 
 #Clear_all button
 if st.button("Clear All"):
+    st.session_state.do_clear = True
+if st.session_state.do_clear:
     clear_all()
+    st.session_state.do_clear = False
 
 
 st.markdown("---")
