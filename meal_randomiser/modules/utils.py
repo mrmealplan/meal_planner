@@ -38,3 +38,16 @@ def clear_all():
         ):
             if key in st.session_state:
                 del st.session_state[key]
+
+def reset_for_generation():
+    # Reset only the state needed for generating a new week
+    st.session_state["week_plan"] = {day: None for day in DAYS}
+    st.session_state["used_meals"] = set()
+    st.session_state["used_categories"] = set()
+    st.session_state["meal_is_veggie"] = {day: False for day in DAYS}
+    st.session_state["meal_is_vegan"] = {day: False for day in DAYS}
+
+    # Do NOT touch filters
+    # Do NOT touch people
+    # Do NOT delete filter widget keys
+    # Do NOT delete override widget keys
