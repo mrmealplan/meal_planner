@@ -290,11 +290,7 @@ st.markdown("---")
 
 #Clear_all button
 if st.button("Clear All"):
-    st.session_state.clear_trigger = True
-    st.stop()
-if st.session_state.clear_trigger:
     clear_all()
-    st.session_state.clear_trigger = False
 
 
 st.markdown("---")
@@ -342,7 +338,6 @@ st.markdown("---")
 
 # Generate week
 if st.button("Generate full week"):
-    clear_all()
     generate_week()
 
 st.markdown("---")
