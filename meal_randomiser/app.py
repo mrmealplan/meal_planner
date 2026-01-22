@@ -321,8 +321,8 @@ for day in DAYS:
             key=f"{day}_filters",
             label_visibility="collapsed"
         )   
-
-        st.session_state["filters"][day] = selected
+        if f"{day}_filters" in st.session_state:
+            st.session_state["filters"][day] = selected
 
 
     with col3:
