@@ -93,7 +93,6 @@ def generate_week(): #picks a random meal each day
 
 
 def reroll_day(day):
-    # Remove old meal + category from used lists
     old_meal_name = st.session_state["week_plan"][day]
 
     if old_meal_name:
@@ -110,12 +109,16 @@ def reroll_day(day):
 
         if result:
             old_meal_id, old_category = result
-
             st.session_state["used_meals"].discard(old_meal_id)
             st.session_state["used_categories"].discard(old_category)
 
-    # Now apply the new filters
     filters = st.session_state["filters"][day]
+
+    # 🔹 NEW: honour "Skip" on reroll too
+    if "Skip" in filters:
+        st.session_state["week_plan"][day] = None
+        return
+
     meal = get_random_meal(filters)
 
     if meal is None:
