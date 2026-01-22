@@ -1,5 +1,3 @@
-pip>=23.1
 streamlit
 psycopg2-binary
 st-copy
-supabase-py==2.4.3
