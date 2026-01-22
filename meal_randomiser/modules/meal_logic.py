@@ -92,15 +92,15 @@ def generate_week(): #picks a random meal each day
         st.session_state["meal_is_vegan"][day] = is_vegan
 
 
-def reroll_day(day): #re-rolls a specific day
-    
-    old_meal_name = st.session_state["week_plan"][day] #first, bring the rejected category back
+def reroll_day(day):
+    # Remove old meal + category from used lists
+    old_meal_name = st.session_state["week_plan"][day]
 
     if old_meal_name:
         conn = get_connection()
         cur = conn.cursor()
         cur.execute("""
-            SELECT c.name
+            SELECT m.id, c.name
             FROM meals m
             JOIN categories c ON m.category_id = c.id
             WHERE m.name = %s
@@ -109,11 +109,13 @@ def reroll_day(day): #re-rolls a specific day
         conn.close()
 
         if result:
-            old_category = result[0]
-            if old_category in st.session_state["used_categories"]:
-                st.session_state["used_categories"].remove(old_category)
+            old_meal_id, old_category = result
 
-    filters = st.session_state["filters"][day] #now suggest a new meal
+            st.session_state["used_meals"].discard(old_meal_id)
+            st.session_state["used_categories"].discard(old_category)
+
+    # Now apply the new filters
+    filters = st.session_state["filters"][day]
     meal = get_random_meal(filters)
 
     if meal is None:
