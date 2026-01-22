@@ -39,6 +39,11 @@ if st.button("Clear All"):
 
 st.markdown("---")
 
+# Ensure filters dict always exists
+if "filters" not in st.session_state:
+    st.session_state["filters"] = {day: [] for day in DAYS}
+
+
 # Filters + people per day
 for day in DAYS:
     col1, col2, col3 = st.columns([1, 2, 2]) #this defines 3 columns with width 1,2,2
