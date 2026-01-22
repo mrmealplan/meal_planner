@@ -20,7 +20,7 @@ for key, default in SESSION_DEFAULTS.items():
 
 
 def clear_all():
-    # reset your logical state
+    # Reset logical state
     st.session_state["week_plan"] = {day: None for day in DAYS}
     st.session_state["used_meals"] = set()
     st.session_state["used_categories"] = set()
@@ -29,14 +29,12 @@ def clear_all():
     st.session_state["meal_is_vegan"] = {day: False for day in DAYS}
     st.session_state["people"] = {day: 2 for day in DAYS}
 
-    # force‑reset the multiselect widgets
+    # Remove widget keys so Streamlit recreates them with defaults
     for day in DAYS:
-        filter_key = f"{day}_filters"
-        if filter_key in st.session_state:
-            st.session_state[filter_key] = []   # <-- this is the key step
-
-    # delete widget keys so UI resets fully
-    for day in DAYS:
-        for key in (f"{day}_filters", f"{day}_override", f"{day}_people"):
+        for key in (
+            f"{day}_filters",
+            f"{day}_override",
+            f"{day}_people"
+        ):
             if key in st.session_state:
                 del st.session_state[key]
