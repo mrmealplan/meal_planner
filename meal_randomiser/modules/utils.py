@@ -31,6 +31,9 @@ def clear_all():
 
     # Remove widget keys so Streamlit recreates them with defaults
     for day in DAYS:
+        st.session_state[f"{day}_filters"] = []
+        st.session_state[f"{day}_override"] = False
+        st.session_state[f"{day}_people"] = 2
         for key in (
             f"{day}_filters",
             f"{day}_override",
@@ -51,3 +54,4 @@ def reset_for_generation():
     # Do NOT touch people
     # Do NOT delete filter widget keys
     # Do NOT delete override widget keys
+
