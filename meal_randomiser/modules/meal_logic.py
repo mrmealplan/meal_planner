@@ -2,7 +2,8 @@ import streamlit as st
 from modules.db import get_connection
 from modules.constants import DAYS
 
-def filter_priority(filters): #arranges priority order for selecting meals - vegan+quick is first as there are less meals for this
+#arranges priority order for selecting meals - vegan+quick is first as there are less meals for this,etc.
+def filter_priority(filters): 
     if "Vegan" in filters and "Quick" in filters:
         return 1
     if "Vegan" in filters:
@@ -15,8 +16,8 @@ def filter_priority(filters): #arranges priority order for selecting meals - veg
         return 5
     return 6
 
-
-def get_random_meal(filters): #gets a random meal from the database based on the filters selected
+#gets a random meal from the database based on the filters selected
+def get_random_meal(filters): 
     conn = get_connection()
     cur = conn.cursor()
 
@@ -62,8 +63,8 @@ def get_random_meal(filters): #gets a random meal from the database based on the
 
     return meal
 
-
-def generate_week(): #picks a random meal each day
+#picks a random meal for each day
+def generate_week(): 
     ordered_days = sorted(
         DAYS,
         key=lambda d: filter_priority(st.session_state["filters"][d])
@@ -91,7 +92,7 @@ def generate_week(): #picks a random meal each day
         st.session_state["meal_is_veggie"][day] = is_veggie
         st.session_state["meal_is_vegan"][day] = is_vegan
 
-
+#re-rolls a single day
 def reroll_day(day):
     old_meal_name = st.session_state["week_plan"][day]
 

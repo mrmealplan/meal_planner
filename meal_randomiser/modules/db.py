@@ -1,9 +1,9 @@
 import psycopg2
 import streamlit as st
 
-######################################################################
-# DB CONNECTION - need to understand more about this
-######################################################################
+#######################################################################
+# DB CONNECTION to connect to Neon - need to understand more about this
+#######################################################################
 
 @st.cache_resource
 def get_connection_factory():

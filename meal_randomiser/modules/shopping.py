@@ -1,7 +1,7 @@
 import streamlit as st
 from modules.db import get_connection
 
-
+#Generate a shopping list based on the meals selected for the week
 def generate_shopping_list():
     selected = [
         (day, name, st.session_state["people"][day])
@@ -69,7 +69,7 @@ def generate_shopping_list():
 
     return result
 
-
+# Formats the quantity so we don't get things like 2.0 tins of beans
 def format_quantity(qty):
     if qty is None:
         return None
