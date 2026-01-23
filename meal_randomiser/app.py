@@ -8,7 +8,13 @@ from modules.meal_logic import generate_week, reroll_day
 from modules.shopping import generate_shopping_list, format_quantity
 from modules.utils import clear_all
 from modules.constants import DAYS
-from modules.utils import reset_for_generation
+from utils import reset_for_generation
+import streamlit as st
+from auth_ui import auth_ui
+from auth import signup, login
+
+if "session" not in st.session_state:
+    st.session_state.session = None
 
 
 ######################################################################
@@ -24,6 +30,18 @@ def get_all_meal_names():
     # ensure uniqueness at Python level too
     return sorted({r[0] for r in rows})
 
+######################################################################
+#Login stuff
+########################################################################
+
+if not st.session_state.session:
+    auth_ui()
+    st.stop()
+
+st.sidebar.write("Logged in!")
+if st.sidebar.button("Logout"):
+    st.session_state.session = None
+    st.experimental_rerun()
 
 
 ######################################################################
@@ -201,4 +219,3 @@ if st.button("Create shopping list"):
 
 
 st.markdown("---")
-
