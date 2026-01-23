@@ -13,9 +13,6 @@ import streamlit as st
 from auth_ui import auth_ui
 from auth import signup, login
 
-#Temp edit
-st.write("Keys present:", list(st.secrets.keys()))
-
 if "session" not in st.session_state:
     st.session_state.session = None
 
@@ -222,4 +219,5 @@ if st.button("Create shopping list"):
 
 
 st.markdown("---")
+
 
