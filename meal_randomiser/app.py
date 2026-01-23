@@ -8,7 +8,7 @@ from modules.meal_logic import generate_week, reroll_day
 from modules.shopping import generate_shopping_list, format_quantity
 from modules.utils import clear_all
 from modules.constants import DAYS
-from utils import reset_for_generation
+from modules.utils import reset_for_generation
 import streamlit as st
 from auth_ui import auth_ui
 from auth import signup, login
@@ -41,7 +41,7 @@ if not st.session_state.session:
 st.sidebar.write("Logged in!")
 if st.sidebar.button("Logout"):
     st.session_state.session = None
-    st.experimental_rerun()
+    st.rerun()
 
 
 ######################################################################

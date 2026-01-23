@@ -21,6 +21,6 @@ def auth_ui():
             res = login(email, password)
             if "access_token" in res:
                 st.session_state.session = res
-                st.experimental_rerun()
+                st.rerun()
             else:
                 st.error("Invalid login")
