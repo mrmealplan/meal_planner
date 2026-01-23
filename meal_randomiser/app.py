@@ -12,6 +12,25 @@ from modules.utils import reset_for_generation
 import streamlit as st
 from auth_ui import auth_ui
 from auth import signup, login
+from auth import update_password
+
+# Handle Supabase password reset redirect
+params = st.query_params
+
+if params.get("type") == "recovery" and "access_token" in params:
+    st.session_state.reset_token = params["access_token"]
+    st.rerun()
+
+if "reset_token" in st.session_state:
+    st.title("Reset your password")
+
+    new_pw = st.text_input("New password", type="password")
+    if st.button("Set new password"):
+        res = update_password(st.session_state.reset_token, new_pw)
+        st.success("Password updated! You can now log in.")
+        del st.session_state.reset_token
+    st.stop()
+
 
 if "session" not in st.session_state:
     st.session_state.session = None
@@ -219,7 +238,3 @@ if st.button("Create shopping list"):
 
 
 st.markdown("---")
-
-
-
-

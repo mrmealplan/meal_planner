@@ -27,3 +27,15 @@ def login(email, password):
         "email": email,
         "password": password
     })
+
+def update_password(access_token, new_password):
+    SUPABASE_URL, SUPABASE_KEY = get_supabase_config()
+
+    url = f"{SUPABASE_URL}/auth/v1/user"
+    headers = {
+        "apikey": SUPABASE_KEY,
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json"
+    }
+    payload = {"password": new_password}
+    return requests.put(url, json=payload, headers=headers).json()
