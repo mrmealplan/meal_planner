@@ -15,10 +15,10 @@ from auth import signup, login
 from auth import update_password
 
 # Handle Supabase password reset redirect
-params = st.query_params
+params = st.experimental_get_query_params()
 
-if params.get("type") == "recovery" and "access_token" in params:
-    st.session_state.reset_token = params["access_token"]
+if params.get("type") == ["recovery"] and "access_token" in params:
+    st.session_state.reset_token = params["access_token"][0]
     st.rerun()
 
 if "reset_token" in st.session_state:
@@ -30,6 +30,7 @@ if "reset_token" in st.session_state:
         st.success("Password updated! You can now log in.")
         del st.session_state.reset_token
     st.stop()
+
 
 
 if "session" not in st.session_state:
