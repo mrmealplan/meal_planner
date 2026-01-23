@@ -6,9 +6,9 @@ def auth_ui():
 
     mode = st.radio("Choose", ["Login", "Sign Up"], horizontal=True)
 
-    # -------------------------
-    # SIGN UP MODE
-    # -------------------------
+    ####################
+    # SIGN UP MODE - learn what this actually does
+    ####################
     if mode == "Sign Up":
         email = st.text_input("Email", key="signup_email")
         password = st.text_input("Password", type="password", key="signup_password")
@@ -26,9 +26,9 @@ def auth_ui():
                     or "Sign-up failed"
                 )
 
-    # -------------------------
-    # LOGIN MODE
-    # -------------------------
+    ####################
+    # LOGIN MODE - learn what this actually does
+    ####################
     if mode == "Login":
         email = st.text_input("Email", key="login_email")
         password = st.text_input("Password", type="password", key="login_password")

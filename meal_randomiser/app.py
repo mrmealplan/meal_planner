@@ -1,45 +1,23 @@
-######################################################################
-#The imports
-#######################################################################
 import streamlit as st
 from st_copy import copy_button
 from modules.db import get_connection
 from modules.meal_logic import generate_week, reroll_day
 from modules.shopping import generate_shopping_list, format_quantity
-from modules.utils import clear_all
+from modules.utils import clear_all, reset_for_generation
 from modules.constants import DAYS
-from modules.utils import reset_for_generation
-import streamlit as st
 from auth_ui import auth_ui
-from auth import signup, login
-from auth import update_password
-
-# Handle Supabase password reset redirect
-params = st.experimental_get_query_params()
-
-if params.get("type") == ["recovery"] and "access_token" in params:
-    st.session_state.reset_token = params["access_token"][0]
-    st.rerun()
-
-if "reset_token" in st.session_state:
-    st.title("Reset your password")
-
-    new_pw = st.text_input("New password", type="password")
-    if st.button("Set new password"):
-        res = update_password(st.session_state.reset_token, new_pw)
-        st.success("Password updated! You can now log in.")
-        del st.session_state.reset_token
-    st.stop()
 
 
-
+######################
+#Not totall sure if this needs to be here in the code
+######################
 if "session" not in st.session_state:
     st.session_state.session = None
 
 
-######################################################################
+#####################
 #The cache
-#######################################################################
+######################
 @st.cache_data
 def get_all_meal_names():
     conn = get_connection()
@@ -50,10 +28,10 @@ def get_all_meal_names():
     # ensure uniqueness at Python level too
     return sorted({r[0] for r in rows})
 
-######################################################################
-#Login stuff
-########################################################################
 
+#######################
+#Login stuff
+#######################
 if not st.session_state.session:
     auth_ui()
     st.stop()
@@ -64,21 +42,25 @@ if st.sidebar.button("Logout"):
     st.rerun()
 
 
-######################################################################
-#The UI
-#######################################################################
+######################
+#The meal planning UI
+######################
 
 st.title("Weekly meal planner") #title
 
 st.markdown("---") #page divider line
 
-#Clear_all button
+###################
+# Clear_all button
+###################
 if st.button("Clear All"):
     clear_all()
 
 st.markdown("---")
 
+###################
 # Ensure filters dict always exists
+###################
 if "filters" not in st.session_state:
     st.session_state["filters"] = {day: [] for day in DAYS}
 
@@ -98,12 +80,12 @@ if "meal_is_veggie" not in st.session_state:
 if "meal_is_vegan" not in st.session_state:
     st.session_state["meal_is_vegan"] = {day: False for day in DAYS}
 
-
-
-# Filters + people per day
 for day in DAYS:
     col1, col2, col3 = st.columns([1, 2, 2]) #this defines 3 columns with width 1,2,2
 
+    ###################
+    #Day label
+    ###################
     with col1: #in column 1
         st.markdown( #this is HTML code to format the day text
             f"""
@@ -119,6 +101,9 @@ for day in DAYS:
             unsafe_allow_html=True
         )
 
+    ###################
+    #filter selection (veggie, vegan, quick, skip day)
+    ###################
     with col2:
         selected = st.multiselect( #a multiselect filter to allow user to pick veggie, etc.
             "",
@@ -129,7 +114,9 @@ for day in DAYS:
 
         st.session_state["filters"][day] = selected
 
-
+    ###################
+    #people per day selection
+    ###################
     with col3:
         st.session_state["people"][day] = st.number_input( #a number input to show allow the user to pick how many people are eating from 1-10
             f"People eating on {day}",
@@ -141,23 +128,33 @@ for day in DAYS:
 
 st.markdown("---")
 
+###################
 # Generate week - button to generate a full week plan
+###################
 if st.button("Generate full week"):
     reset_for_generation()
     generate_week()
 
 st.markdown("---")
 
-# Day-by-day reroll + override
+###################
+# Day-by-day reroll + override suggestion
+###################
 all_meals = get_all_meal_names()
 
 for day in DAYS:
     col1, col2 = st.columns([2, 4])
 
+    ###################
+    #Re-roll day
+    ###################
     with col1:
         if st.button(f"Re-roll {day}", key=f"{day}_reroll"):
             reroll_day(day)
 
+    ###################
+    #Override meal suggestion
+    ###################
     with col2:
         current_meal = st.session_state["week_plan"][day]
 
@@ -194,7 +191,9 @@ for day in DAYS:
 
 st.markdown("---")
 
+###################
 # Shopping list
+###################
 if st.button("Create shopping list"):
     shopping_list = generate_shopping_list()
 
@@ -212,7 +211,9 @@ if st.button("Create shopping list"):
 
         full_text = "\n".join(checklist_lines)
 
-        # --- COPY BUTTON ABOVE THE LIST ---
+        ###################
+        # Copy shopping list button
+        ###################
         label_col, button_col = st.columns([4, 1])
         with label_col:
             st.markdown("### Copy your shopping list")
@@ -224,7 +225,9 @@ if st.button("Create shopping list"):
                 icon="st"
             )
 
-        # --- NOW DISPLAY THE LIST ---
+        ###################
+        #display shopping list on the page
+        ###################
         current_area = None
         for area, ingredient, qty, unit in shopping_list:
             if area != current_area:
