@@ -11,10 +11,19 @@ def auth_ui():
     if mode == "Sign Up":
         if st.button("Create Account"):
             res = signup(email, password)
-            if "user" in res:
+
+            # Success cases (with or without email confirmation)
+            if "user" in res or res.get("id"):
                 st.success("Account created! Check your email.")
             else:
-                st.error(res.get("msg", "Sign-up failed"))
+                # Show the real Supabase error
+                st.error(
+                    res.get("error_description")
+                    or res.get("message")
+                    or res.get("error")
+                    or "Sign-up failed"
+                )
+
 
     if mode == "Login":
         if st.button("Login"):
