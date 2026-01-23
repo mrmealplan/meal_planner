@@ -5,18 +5,20 @@ def auth_ui():
     st.title("Login / Sign Up")
 
     mode = st.radio("Choose", ["Login", "Sign Up"], horizontal=True)
-    email = st.text_input("Email")
-    password = st.text_input("Password", type="password")
 
+    # -------------------------
+    # SIGN UP MODE
+    # -------------------------
     if mode == "Sign Up":
-        if st.button("Create Account"):
+        email = st.text_input("Email", key="signup_email")
+        password = st.text_input("Password", type="password", key="signup_password")
+
+        if st.button("Create Account", key="signup_button"):
             res = signup(email, password)
 
-            # Success cases (with or without email confirmation)
             if "user" in res or res.get("id"):
-                st.success("Account created! Check your email.")
+                st.success("Account created!")
             else:
-                # Show the real Supabase error
                 st.error(
                     res.get("error_description")
                     or res.get("message")
@@ -24,15 +26,16 @@ def auth_ui():
                     or "Sign-up failed"
                 )
 
-
+    # -------------------------
+    # LOGIN MODE
+    # -------------------------
     if mode == "Login":
-        email = st.text_input("Email")
-        password = st.text_input("Password", type="password")
+        email = st.text_input("Email", key="login_email")
+        password = st.text_input("Password", type="password", key="login_password")
 
-        # Temporary debug toggle
-        debug = st.checkbox("Show Supabase debug info")
+        debug = st.checkbox("Show Supabase debug info", key="login_debug")
 
-        if st.button("Login"):
+        if st.button("Login", key="login_button"):
             res = login(email, password)
 
             if "access_token" in res:
@@ -41,7 +44,5 @@ def auth_ui():
             else:
                 st.error("Invalid login")
 
-                # Show the real Supabase error
                 if debug:
                     st.write("Supabase response:", res)
-
