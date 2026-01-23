@@ -26,10 +26,22 @@ def auth_ui():
 
 
     if mode == "Login":
+        email = st.text_input("Email")
+        password = st.text_input("Password", type="password")
+
+        # Temporary debug toggle
+        debug = st.checkbox("Show Supabase debug info")
+
         if st.button("Login"):
             res = login(email, password)
+
             if "access_token" in res:
                 st.session_state.session = res
                 st.rerun()
             else:
                 st.error("Invalid login")
+
+                # Show the real Supabase error
+                if debug:
+                    st.write("Supabase response:", res)
+
