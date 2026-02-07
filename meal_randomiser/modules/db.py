@@ -21,18 +21,6 @@ def get_connection_factory():
 
     return connect
 
-@st.cache_data
-def get_meal_lookup():
-    conn = get_connection()
-    cur = conn.cursor()
-    cur.execute("""
-        SELECT id, name, is_veggie, is_vegan
-        FROM meals
-    """)
-    rows = cur.fetchall()
-    conn.close()
-
-    return {mid: (name, veg, vegan) for mid, name, veg, vegan in rows}
 
 def get_connection():
     connect = get_connection_factory()
@@ -46,5 +34,3 @@ def get_connection():
         conn = connect()
 
     return conn
-
-
