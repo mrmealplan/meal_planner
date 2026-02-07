@@ -19,14 +19,13 @@ if "session" not in st.session_state:
 #The cache
 ######################
 @st.cache_data
-def get_all_meal_names():
+def get_all_meals():
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute("SELECT DISTINCT name FROM meals ORDER BY name")
+    cur.execute("SELECT id, name FROM meals ORDER BY name")
     rows = cur.fetchall()
     conn.close()
-    # ensure uniqueness at Python level too
-    return sorted({r[0] for r in rows})
+    return rows  # [(id, name)]
 
 
 #######################
@@ -140,7 +139,8 @@ st.markdown("---")
 ###################
 # Day-by-day reroll + override suggestion
 ###################
-all_meals = get_all_meal_names()
+all_meals = get_all_meals()
+meal_dict = {name: mid for mid, name in all_meals}
 
 for day in DAYS:
     col1, col2 = st.columns([2, 4])
@@ -160,13 +160,14 @@ for day in DAYS:
 
         override = st.selectbox(
             f"{day} meal",
-            options=["(keep suggestion)"] + all_meals,
+            options = ["(keep suggestion)"] + list(meal_dict.keys())
             key=f"{day}_override"
         )
 
         if override != "(keep suggestion)":
-            st.session_state["week_plan"][day] = override
-
+            meal_id = meal_dict[override]
+            st.session_state["week_plan"][day] = meal_id
+            
             conn = get_connection()
             cur = conn.cursor()
             cur.execute("""
@@ -242,3 +243,4 @@ if st.button("Create shopping list"):
 
 
 st.markdown("---")
+
