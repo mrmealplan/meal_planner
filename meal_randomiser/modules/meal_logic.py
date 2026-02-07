@@ -85,8 +85,7 @@ def generate_week():
             continue
 
         meal_id, meal_name, category, is_veggie, is_vegan = meal
-
-        st.session_state["week_plan"][day] = meal_name
+        st.session_state["week_plan"][day] = meal_id
         st.session_state["used_meals"].add(meal_id)
         st.session_state["used_categories"].add(category)
         st.session_state["meal_is_veggie"][day] = is_veggie
@@ -133,3 +132,4 @@ def reroll_day(day):
     st.session_state["used_categories"].add(category)
     st.session_state["meal_is_veggie"][day] = is_veggie
     st.session_state["meal_is_vegan"][day] = is_vegan
+
