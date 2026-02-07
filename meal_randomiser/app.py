@@ -1,11 +1,12 @@
 import streamlit as st
 from st_copy import copy_button
-from modules.db import get_connection
+from modules.db import get_connection, get_meal_lookup
 from modules.meal_logic import generate_week, reroll_day
 from modules.shopping import generate_shopping_list, format_quantity
 from modules.utils import clear_all, reset_for_generation
 from modules.constants import DAYS
 from auth_ui import auth_ui
+
 
 
 ######################
@@ -140,6 +141,7 @@ st.markdown("---")
 # Day-by-day reroll + override suggestion
 ###################
 all_meals = get_all_meals()
+meal_lookup = get_meal_lookup()
 meal_dict = {name: mid for mid, name in all_meals}
 
 for day in DAYS:
@@ -182,13 +184,15 @@ for day in DAYS:
                 st.session_state["meal_is_veggie"][day] = flags[0]
                 st.session_state["meal_is_vegan"][day] = flags[1]
 
-        final_meal = st.session_state["week_plan"][day]
-        if final_meal:
-            suffix = " (ve)" if st.session_state["meal_is_vegan"][day] else \
-                     " (v)" if st.session_state["meal_is_veggie"][day] else ""
-            st.success(f"{day}: {final_meal}{suffix}")
+        meal_id = st.session_state["week_plan"][day]
+        
+        if meal_id:
+            name, is_veg, is_vegan = meal_lookup[meal_id]
+            suffix = " (ve)" if is_vegan else " (v)" if is_veg else ""
+            st.success(f"{day}: {name}{suffix}")
         else:
             st.info("No meal selected.")
+
 
 st.markdown("---")
 
@@ -243,4 +247,5 @@ if st.button("Create shopping list"):
 
 
 st.markdown("---")
+
 
