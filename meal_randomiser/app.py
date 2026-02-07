@@ -1,12 +1,11 @@
 import streamlit as st
 from st_copy import copy_button
-from modules.db import get_connection, get_meal_lookup
+from modules.db import get_connection
 from modules.meal_logic import generate_week, reroll_day
 from modules.shopping import generate_shopping_list, format_quantity
 from modules.utils import clear_all, reset_for_generation
 from modules.constants import DAYS
 from auth_ui import auth_ui
-
 
 
 ######################
@@ -20,13 +19,14 @@ if "session" not in st.session_state:
 #The cache
 ######################
 @st.cache_data
-def get_all_meals():
+def get_all_meal_names():
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute("SELECT id, name FROM meals ORDER BY name")
+    cur.execute("SELECT DISTINCT name FROM meals ORDER BY name")
     rows = cur.fetchall()
     conn.close()
-    return rows  # [(id, name)]
+    # ensure uniqueness at Python level too
+    return sorted({r[0] for r in rows})
 
 
 #######################
@@ -140,9 +140,7 @@ st.markdown("---")
 ###################
 # Day-by-day reroll + override suggestion
 ###################
-all_meals = get_all_meals()
-meal_lookup = get_meal_lookup()
-meal_dict = {name: mid for mid, name in all_meals}
+all_meals = get_all_meal_names()
 
 for day in DAYS:
     col1, col2 = st.columns([2, 4])
@@ -162,14 +160,13 @@ for day in DAYS:
 
         override = st.selectbox(
             f"{day} meal",
-            options = ["(keep suggestion)"] + list(meal_dict.keys())
+            options=["(keep suggestion)"] + all_meals,
             key=f"{day}_override"
         )
 
         if override != "(keep suggestion)":
-            meal_id = meal_dict[override]
-            st.session_state["week_plan"][day] = meal_id
-            
+            st.session_state["week_plan"][day] = override
+
             conn = get_connection()
             cur = conn.cursor()
             cur.execute("""
@@ -184,15 +181,13 @@ for day in DAYS:
                 st.session_state["meal_is_veggie"][day] = flags[0]
                 st.session_state["meal_is_vegan"][day] = flags[1]
 
-        meal_id = st.session_state["week_plan"][day]
-        
-        if meal_id:
-            name, is_veg, is_vegan = meal_lookup[meal_id]
-            suffix = " (ve)" if is_vegan else " (v)" if is_veg else ""
-            st.success(f"{day}: {name}{suffix}")
+        final_meal = st.session_state["week_plan"][day]
+        if final_meal:
+            suffix = " (ve)" if st.session_state["meal_is_vegan"][day] else \
+                     " (v)" if st.session_state["meal_is_veggie"][day] else ""
+            st.success(f"{day}: {final_meal}{suffix}")
         else:
             st.info("No meal selected.")
-
 
 st.markdown("---")
 
@@ -247,5 +242,3 @@ if st.button("Create shopping list"):
 
 
 st.markdown("---")
-
-
